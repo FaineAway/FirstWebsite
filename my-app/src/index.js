@@ -52,6 +52,7 @@ class Game extends React.Component {
       }],
       stepNumber: 0,
       xIsNext:true,
+      moveHistory:[],
     };
   }
 
@@ -59,28 +60,34 @@ class Game extends React.Component {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
+    // Tasker 1
+    const moveHistory = this.state.moveHistory.slice(0, this.state.stepNumber + 1);
     if(calculateWinner(squares) || squares[i]){
       return;
     }
     squares[i] = this.state.xIsNext ? 'X' : 'O';
+    moveHistory.push(i);
+
     this.setState({
-      history:history.concat([{
-        squares: squares,
-      }]),
+      history:history.concat([{squares: squares,}]),
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
+      moveHistory: moveHistory,
     });
   }
 
 jumpTo(step){
+  const moveHistory = this.state.moveHistory.slice(0, step);
   this.setState({
     stepNumber: step,
     xIsNext:(step%2) ===0,
+    moveHistory:moveHistory,
   });
 }
 
   render() {
     const history = this.state.history;
+    const moveHistory = this.state.moveHistory;
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
 
@@ -93,6 +100,13 @@ jumpTo(step){
             <button onClick={() => this.jumpTo(move)}>{desc}</button>
           </li>
         );
+    });
+
+    let moveHistoryList = [];
+    moveHistory.forEach((step, move) =>{
+      const player = move%2 ? 'O' : 'X'
+      const msg = 'Move ' + (move + 1) + ' was played by ' + player + ' at ' + step;
+      moveHistoryList.push(<li>{msg}</li>)
     });
 
     let status;
@@ -114,6 +128,10 @@ jumpTo(step){
         <div className="game-info">
           <div>{status}</div>
           <ol>{moves}</ol>
+        </div>
+        <div className="move-description">
+          <div>{'Move description'}</div>
+          <ol>{moveHistoryList}</ol>
         </div>
       </div>
     );
